@@ -18,12 +18,38 @@ class CPUStatsProducer:
         """
         ini_file = args[0]
         self._config = Config(ini_file)
-        self._kafka_producer = self.connect_kafka_producer(
-            self._config.get_broker_setting("name"),
-            self._config.get_broker_setting("port")
+        self._kafka_producer = self.__connect_kafka_producer(
+            self._config.get_setting("broker", "name"),
+            self._config.get_setting("broker", "port")
             )
 
-    def publish_message(self, topic_name, key, value):
+    def __connect_kafka_producer(self, server, port):
+        """
+        Connect to broker as producer.
+
+        Parameters
+        ----------
+        server: Server Name
+        port: Port where broker is connected.
+        """
+        _producer = None
+        try:
+            _producer = KafkaProducer(
+                            bootstrap_servers=[f"{server}:{port}"],
+                            # https://help.aiven.io/en/articles/489572-getting-started-with-aiven-kafka
+                            security_protocol=self._config.get_setting("broker", "security_protocol"),
+                            ssl_cafile=self._config.get_setting("broker", "ssl_cafile"),
+                            ssl_certfile=self._config.get_setting("broker", "ssl_certfile"),
+                            ssl_keyfile=self._config.get_setting("broker", "ssl_keyfile")
+                            )
+        except Exception as ex:
+            print('Exception while connecting Kafka')
+            print(str(ex))
+        finally:
+            return _producer
+
+
+    def __publish_message(self, topic_name, key, value):
         """
         Publishes Messages
 
@@ -44,31 +70,7 @@ class CPUStatsProducer:
             print('Exception in publishing message')
             print(str(ex))
 
-    def connect_kafka_producer(self, server, port):
-        """
-        Connect to broker as producer.
-
-        Parameters
-        ----------
-        server: Server Name
-        port: Port where broker is connected.
-        """
-        _producer = None
-        try:
-            _producer = KafkaProducer(
-                            bootstrap_servers=[f"{server}:{port}"],
-                            api_version=(
-                                int(self._config.get_broker_setting("api_min")),
-                                int(self._config.get_broker_setting("api_max"))
-                                )
-                            )
-        except Exception as ex:
-            print('Exception while connecting Kafka')
-            print(str(ex))
-        finally:
-            return _producer
-
-    def construct_cpu_stats_dict(self, cpu_times, cpu_stats, cpu_cnt, cpu_freq):
+    def __construct_cpu_stats_dict(self, cpu_times, cpu_stats, cpu_cnt, cpu_freq):
         """
         Constructs cpu stats that needs to be sent to broker
         Parameters
@@ -101,7 +103,7 @@ class CPUStatsProducer:
         }
         return cpu_json
 
-    def generate_cpu_stats(self):
+    def __generate_cpu_stats(self):
         """
         Generates cpu stats
 
@@ -110,7 +112,7 @@ class CPUStatsProducer:
         cpu_stats = psutil.cpu_stats()
         cpu_cnt = psutil.cpu_count(logical=True)
         cpu_freq = psutil.cpu_freq()
-        cpu_stats_json = self.construct_cpu_stats_dict(cpu_times, cpu_stats, cpu_cnt, cpu_freq)
+        cpu_stats_json = self.__construct_cpu_stats_dict(cpu_times, cpu_stats, cpu_cnt, cpu_freq)
         return cpu_stats_json
 
     def produce_messages(self):
@@ -119,10 +121,10 @@ class CPUStatsProducer:
         """
         for i in range(10):
             print("=============")
-            cpu_stats_json = self.generate_cpu_stats()
-            self.publish_message(
-                                self._config.get_messages_setting("topic"),
-                                self._config.get_messages_setting("key"),
+            cpu_stats_json = self.__generate_cpu_stats()
+            self.__publish_message(
+                                self._config.get_setting("messages", "topic"),
+                                self._config.get_setting("messages", "key"),
                                 json.dumps(cpu_stats_json)
                                 )
             print(cpu_stats_json)

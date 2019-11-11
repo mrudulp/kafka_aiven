@@ -11,15 +11,18 @@ class Config:
         args: Arguments to init. Here INI file name is expected as the only argument
 
         """
-        self._config = configparser.ConfigParser()
-        self._config.read(args[0])
+        config = configparser.ConfigParser()
+        config.read(args[0])
+        self._config = config
 
-    def get_broker_setting(self, settingKey):
+    def get_setting(self, section, settingKey):
         """
-        Returns Settings related to Broker Section
+        Returns Settings under Given Section
 
         Parameters
         ----------
+        section: str
+            -- Name of the section under which setting needs to be retrived
         settingKey: str
             -- Name of the Key whose corresponding value needs to be retrived
 
@@ -28,20 +31,4 @@ class Config:
         str
             -- Returns string value corresponding to the key
         """
-        return self._config["broker"][f"{settingKey}"]
-
-    def get_messages_setting(self, settingKey):
-        """
-        Returns Settings under Messages Section
-
-        Parameters
-        ----------
-        settingKey: str
-            -- Name of the Key whose corresponding value needs to be retrived
-
-        Returns
-        -------
-        str
-            -- Returns string value corresponding to the key
-        """
-        return self._config["messages"][f"{settingKey}"]
+        return self._config[f"{section}"][f"{settingKey}"]

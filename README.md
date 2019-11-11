@@ -1,6 +1,19 @@
 # kafka_aiven
-Sample Kafka using aiven services
+Sample application using aiven services
 
+This application uses Kafka & Postgresql service from aiven
+
+There are two main python scripts here.
+* cpu_stats_producer.py -- This produces cpu statistics that are sent to Kafka service in aiven cloud.
+* cpu_stats_consumer.py -- This consumes messages from Kafka service in aiven cloud. This also sends consumed messages to Postgresql database hosted in aiven cloud.
+
+## Running
+* Producer can be run `python cpu_stats_producer.py`
+* Consumer can be run `python cpu_stats_consumer.py`
+
+*Note*
+
+* One needs to First fill up relevant information in the ini files.
 
 # REFERENCES
 
