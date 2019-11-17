@@ -11,6 +11,11 @@ There are two main python scripts here.
 * Producer can be run `python cpu_stats_producer.py`
 * Consumer can be run `python cpu_stats_consumer.py`
 
+## Running Tests
+* Goto root of the project and run following commands --
+    `python -m pytest -v tests\test_dbworker.py`
+    `python -m pytest -v tests\test_kafka.py`
+
 *Note*
 
 * One needs to First fill up relevant information in the ini files.
