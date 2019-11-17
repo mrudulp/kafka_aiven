@@ -115,11 +115,15 @@ class CPUStatsProducer:
         cpu_stats_json = self.__construct_cpu_stats_dict(cpu_times, cpu_stats, cpu_cnt, cpu_freq)
         return cpu_stats_json
 
-    def produce_messages(self):
+    def produce_messages(self, msg_cnt=10):
         """
         Publishes messages
+
+        Parameters
+        ---------
+        msg_cnt: Number of messages to publish
         """
-        for i in range(10):
+        for i in range(msg_cnt):
             print("=============")
             cpu_stats_json = self.__generate_cpu_stats()
             self.__publish_message(

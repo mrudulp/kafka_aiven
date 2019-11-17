@@ -82,23 +82,27 @@ class CPUStatsConsumer:
         values: List of json strings
         """
         worker = DBWorker("db.ini")
-        create_cpustats_table_qry = '''
-            CREATE TABLE IF NOT EXISTS cpustats(
-                Category        CHAR(50),
-                SubCategory     CHAR(50),
-                Value           REAL
-            );
-            '''
-        worker.create_table(create_cpustats_table_qry)
-        for val in values:
-            jval = json.loads(val)
-            for key,value in iter(jval.items()):
-                if type(value) is dict:
-                    for k, v in iter(value.items()):
-                        worker.insert_values(f"INSERT INTO cpustats VALUES('{key}', '{k}', {v})")
-                else:
-                    worker.insert_values(f"INSERT INTO cpustats VALUES('{key}', '{key}', {v})")
-        worker.close()
+        try:
+            create_cpustats_table_qry = '''
+                CREATE TABLE IF NOT EXISTS cpustats(
+                    Category        CHAR(50),
+                    SubCategory     CHAR(50),
+                    Value           REAL
+                );
+                '''
+            worker.ddl_qry(create_cpustats_table_qry)
+            for val in values:
+                jval = json.loads(val)
+                for key,value in iter(jval.items()):
+                    if type(value) is dict:
+                        for k, v in iter(value.items()):
+                            worker.dml_query(f"INSERT INTO cpustats VALUES('{key}', '{k}', {v})")
+                    else:
+                        worker.dml_query(f"INSERT INTO cpustats VALUES('{key}', '{key}', {v})")
+        except Exception as e:
+            print(f"Exception in db operation. Error is -- {e}")
+        finally:
+            worker.close()
 
 if __name__ == '__main__':
     print('Running Consumer..')

@@ -13,8 +13,15 @@ class DBWorker:
         """
         ini_file = args[0]
         self._config = Config(ini_file)
-        uri = self._config.get_setting("db", "uri")
-        self._db_conn = psycopg2.connect(uri)
+
+        uri = self._config.get_setting('db', 'uri')
+        host = self._config.get_setting('db', 'host')
+        port = self._config.get_setting("db", "port")
+        dbname = self._config.get_setting("db", "database")
+        user = self._config.get_setting("db", "user")
+        password = self._config.get_setting("db", "password")
+
+        self._db_conn = psycopg2.connect(user=user, password=password, dbname=dbname, host=host, port=port)
 
     def __execute_query(self, query):
         """
@@ -28,26 +35,26 @@ class DBWorker:
         cursor.execute(query)
         return cursor
 
-    def create_table(self, create_table_qry):
+    def ddl_query(self, ddl_qry):
         """
-        Creates Table
+        DDL Query handles(Create, Drop, Alters) Table
 
         Parameters
         ----------
-        create_table_qry: Query String for Table creation
+        ddl_qry: Query String for Table creation
         """
-        cursor = self.__execute_query(create_table_qry)
+        cursor = self.__execute_query(ddl_qry)
         self._db_conn.commit()
 
-    def insert_values(self, insert_qry):
+    def dml_query(self, dml_qry):
         """
         Inserts values in the table
 
         Parameters
         ----------
-        insert_qry: Query string for inserting values
+        dml_qry: Query string for inserting values
         """
-        cursor = self.__execute_query(insert_qry)
+        cursor = self.__execute_query(dml_qry)
         self._db_conn.commit()
 
     def fetchAll(self, query):
@@ -68,6 +75,3 @@ class DBWorker:
         Closes open databse connection
         """
         self._db_conn.close()
-
-if __name__ == '__main__':
-    pass
